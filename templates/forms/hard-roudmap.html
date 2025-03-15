@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Search</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for smooth transitions and hover effects */
+        input, select, button {
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        /* Autocomplete Dropdown styles */
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .autocomplete-item {
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .autocomplete-item:hover {
+            background: #f1f5f9;
+        }
+        /* Passenger Dropdown styles */
+        .passenger-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            width: 350px;
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+        }
+        .passenger-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+        }
+        .counter-btn {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .counter-btn:hover {
+            background: #f1f5f9;
+        }
+        .counter-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        /* Add route button styles */
+        .add-route-btn {
+            display: flex;
+            align-items: center;
+            color: #3B82F6;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background 0.2s ease;
+        }
+        .add-route-btn:hover {
+            background: #f1f5f9;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex justify-center items-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-5xl">
+        <!-- Header -->
+        <h1 class="text-2xl font-semibold text-gray-800 mb-6">Parvoz qidiruvi</h1>
+
+        <!-- Form -->
+        <form id="flight-search-form" class="space-y-6" onsubmit="handleSubmit(event)">
+            <!-- Flight Search Fields -->
+            <div id="flight-routes">
+                <!-- Birinchi marshrut (default) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 route" data-route-index="0">
+                    <!-- Qayerdan -->
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            name="routes[0][from]" 
+                            class="route-from w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:border-blue-500"
+                            placeholder="Qayerdan"
+                            autocomplete="off"
+                            required
+                        >
+                        <svg class="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.243l-4.243-4.243m0 0L9.172 7.757m4.242 4.243H9.172m4.242 0v-4.242"></path>
+                        </svg>
+                        <div class="route-suggestions autocomplete-dropdown hidden"></div>
+                    </div>
+
+                    <!-- Qayerga -->
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            name="routes[0][to]" 
+                            class="route-to w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:border-blue-500"
+                            placeholder="Qayerga"
+                            autocomplete="off"
+                            required
+                        >
+                        <svg class="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.243l-4.243-4.243m0 0L9.172 7.757m4.242 4.243H9.172m4.242 0v-4.242"></path>
+                        </svg>
+                        <div class="route-suggestions autocomplete-dropdown hidden"></div>
+                    </div>
+
+                    <!-- Sana (Borish) -->
+                    <div class="relative">
+                        <input 
+                            type="date" 
+                            name="routes[0][departureDate]" 
+                            class="route-date w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:border-blue-500 appearance-none"
+                            required
+                        >
+                        <svg class="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+
+                    <!-- Yo‘lovchilar -->
+                    <div class="relative">
+                        <div 
+                            id="passenger-input" 
+                            class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 cursor-pointer"
+                            onclick="togglePassengerDropdown()"
+                        >
+                            <span id="passenger-display">1 Yo‘lovchi, Ekonom</span>
+                        </div>
+                        <svg class="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                        <div id="passenger-dropdown" class="passenger-dropdown hidden">
+                            <!-- Kattalar -->
+                            <div class="passenger-item">
+                                <span class="text-gray-700">Kattalar (12+ yosh)</span>
+                                <div class="flex items-center space-x-2">
+                                    <button type="button" class="counter-btn" onclick="updatePassengerCount('adults', -1)">-</button>
+                                    <span id="adults-count" class="text-gray-700">1</span>
+                                    <button type="button" class="counter-btn" onclick="updatePassengerCount('adults', 1)">+</button>
+                                </div>
+                            </div>
+                            <!-- Bolalar -->
+                            <div class="passenger-item">
+                                <span class="text-gray-700">Bolalar (2-12 yosh)</span>
+                                <div class="flex items-center space-x-2">
+                                    <button type="button" class="counter-btn" onclick="updatePassengerCount('children', -1)">-</button>
+                                    <span id="children-count" class="text-gray-700">0</span>
+                                    <button type="button" class="counter-btn" onclick="updatePassengerCount('children', 1)">+</button>
+                                </div>
+                            </div>
+                            <!-- Chaqaloqlar -->
+                            <div class="passenger-item">
+                                <span class="text-gray-700">Chaqaloqlar (2 yoshgacha)</span>
+                                <div class="flex items-center space-x-2">
+                                    <button type="button" class="counter-btn" onclick="updatePassengerCount('infants', -1)">-</button>
+                                    <span id="infants-count" class="text-gray-700">0</span>
+                                    <button type="button" class="counter-btn" onclick="updatePassengerCount('infants', 1)">+</button>
+                                </div>
+                            </div>
+                            <!-- Sinf tanlash -->
+                            <div class="passenger-item">
+                                <span class="text-gray-700">Sinf</span>
+                                <div class="flex space-x-4">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="radio" name="classType" value="economy" class="text-blue-500" checked onclick="updatePassengerDisplay()">
+                                        <span class="text-gray-700">Ekonom</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="radio" name="classType" value="business" class="text-blue-500" onclick="updatePassengerDisplay()">
+                                        <span class="text-gray-700">Biznes</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marshrut qo'shish tugmasi -->
+            <div>
+                <button type="button" class="add-route-btn" onclick="addRoute()">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Marshrut qo'shish
+                </button>
+            </div>
+            
+            <!-- Search Button -->
+            <div class="flex justify-end">
+                <button 
+                    type="submit" 
+                    class="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 shadow-md hover:shadow-lg transition-all"
+                >
+                    Qidiruv
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Ma'lumotlar (sizning array'ingiz)
+        const airports = [
+            { name: "Toshkent", iataCode: "TAS" },
+            { name: "Samarqand", iataCode: "SKD" },
+            { name: "Buxoro", iataCode: "BHK" },
+            { name: "Farg'ona", iataCode: "FEG" },
+            { name: "London", iataCode: "LHR" },
+            { name: "New York", iataCode: "JFK" }
+        ];
+
+        // Elementlar
+        const flightRoutes = document.getElementById('flight-routes');
+        const passengerDropdown = document.getElementById('passenger-dropdown');
+        let routeCount = 1; // Birinchi marshrut default sifatida mavjud
+
+        // Yo‘lovchilar soni
+        let passengers = {
+            adults: 1,
+            children: 0,
+            infants: 0,
+            classType: 'economy'
+        };
+
+        // Yangi marshrut qo'shish funksiyasi
+        function addRoute() {
+            const routeDiv = createRoute(routeCount);
+            flightRoutes.appendChild(routeDiv);
+            routeCount++;
+        }
+
+        // Marshrut qatorini yaratish funksiyasi
+        function createRoute(index) {
+            const routeDiv = document.createElement('div');
+            routeDiv.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 route';
+            routeDiv.dataset.routeIndex = index;
+
+            // Qayerdan
+            const fromDiv = document.createElement('div');
+            fromDiv.className = 'relative';
+            fromDiv.innerHTML = `
+                <input 
+                    type="text" 
+                    name="routes[${index}][from]" 
+                    class="route-from w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:border-blue-500"
+                    placeholder="Qayerdan"
+                    autocomplete="off"
+                    required
+                >
+                <svg class="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.243l-4.243-4.243m0 0L9.172 7.757m4.242 4.243H9.172m4.242 0v-4.242"></path>
+                </svg>
+                <div class="route-suggestions autocomplete-dropdown hidden"></div>
+            `;
+
+            // Qayerga
+            const toDiv = document.createElement('div');
+            toDiv.className = 'relative';
+            toDiv.innerHTML = `
+                <input 
+                    type="text" 
+                    name="routes[${index}][to]" 
+                    class="route-to w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:border-blue-500"
+                    placeholder="Qayerga"
+                    autocomplete="off"
+                    required
+                >
+                <svg class="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.243l-4.243-4.243m0 0L9.172 7.757m4.242 4.243H9.172m4.242 0v-4.242"></path>
+                </svg>
+                <div class="route-suggestions autocomplete-dropdown hidden"></div>
+            `;
+
+            // Sana
+            const dateDiv = document.createElement('div');
+            dateDiv.className = 'relative';
+            dateDiv.innerHTML = `
+                <input 
+                    type="date" 
+                    name="routes[${index}][departureDate]" 
+                    class="route-date w-full p-3 border border-gray-300 rounded-lg text-gray-700 focus:border-blue-500 appearance-none"
+                    required
+                >
+                <svg class="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+            `;
+
+            // Yo‘lovchilar (faqat birinchi qatorda)
+            const passengerDiv = document.createElement('div');
+            if (index === 0) {
+                passengerDiv.className = 'relative';
+                passengerDiv.innerHTML = `
+                    <div 
+                        id="passenger-input" 
+                        class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 cursor-pointer"
+                        onclick="togglePassengerDropdown()"
+                    >
+                        <span id="passenger-display">1 Yo‘lovchi, Ekonom</span>
+                    </div>
+                    <svg class="absolute top-1/2 right-3 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                    <div id="passenger-dropdown" class="passenger-dropdown hidden">
+                        <div class="passenger-item">
+                            <span class="text-gray-700">Kattalar (12+ yosh)</span>
+                            <div class="flex items-center space-x-2">
+                                <button type="button" class="counter-btn" onclick="updatePassengerCount('adults', -1)">-</button>
+                                <span id="adults-count" class="text-gray-700">1</span>
+                                <button type="button" class="counter-btn" onclick="updatePassengerCount('adults', 1)">+</button>
+                            </div>
+                        </div>
+                        <div class="passenger-item">
+                            <span class="text-gray-700">Bolalar (2-12 yosh)</span>
+                            <div class="flex items-center space-x-2">
+                                <button type="button" class="counter-btn" onclick="updatePassengerCount('children', -1)">-</button>
+                                <span id="children-count" class="text-gray-700">0</span>
+                                <button type="button" class="counter-btn" onclick="updatePassengerCount('children', 1)">+</button>
+                            </div>
+                        </div>
+                        <div class="passenger-item">
+                            <span class="text-gray-700">Chaqaloqlar (2 yoshgacha)</span>
+                            <div class="flex items-center space-x-2">
+                                <button type="button" class="counter-btn" onclick="updatePassengerCount('infants', -1)">-</button>
+                                <span id="infants-count" class="text-gray-700">0</span>
+                                <button type="button" class="counter-btn" onclick="updatePassengerCount('infants', 1)">+</button>
+                            </div>
+                        </div>
+                        <div class="passenger-item">
+                            <span class="text-gray-700">Sinf</span>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="classType" value="economy" class="text-blue-500" checked onclick="updatePassengerDisplay()">
+                                    <span class="text-gray-700">Ekonom</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="classType" value="business" class="text-blue-500" onclick="updatePassengerDisplay()">
+                                    <span class="text-gray-700">Biznes</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            routeDiv.appendChild(fromDiv);
+            routeDiv.appendChild(toDiv);
+            routeDiv.appendChild(dateDiv);
+            if (index === 0) routeDiv.appendChild(passengerDiv);
+
+            // Autocomplete-ni sozlash
+            setupAutocomplete(fromDiv.querySelector('.route-from'), fromDiv.querySelector('.route-suggestions'));
+            setupAutocomplete(toDiv.querySelector('.route-to'), toDiv.querySelector('.route-suggestions'));
+
+            return routeDiv;
+        }
+
+        // Autocomplete funksiyasi
+        function setupAutocomplete(input, suggestionsDiv) {
+            input.addEventListener('input', function () {
+                const query = this.value.toLowerCase();
+                suggestionsDiv.innerHTML = ''; // Oldingi takliflarni tozalash
+                suggestionsDiv.classList.add('hidden');
+
+                if (query) {
+                    const filteredAirports = airports.filter(airport =>
+                        airport.name.toLowerCase().includes(query) || airport.iataCode.toLowerCase().includes(query)
+                    );
+
+                    if (filteredAirports.length) {
+                        suggestionsDiv.classList.remove('hidden');
+                        filteredAirports.forEach(airport => {
+                            const item = document.createElement('div');
+                            item.classList.add('autocomplete-item');
+                            item.textContent = `${airport.name} (${airport.iataCode})`;
+                            item.addEventListener('click', () => {
+                                input.value = `${airport.name} (${airport.iataCode})`;
+                                suggestionsDiv.classList.add('hidden');
+                            });
+                            suggestionsDiv.appendChild(item);
+                        });
+                    }
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                    suggestionsDiv.classList.add('hidden');
+                }
+            });
+        }
+
+        // Yo‘lovchilar dropdownini ochish/yopish
+        function togglePassengerDropdown() {
+            passengerDropdown.classList.toggle('hidden');
+        }
+
+        // Yo‘lovchilar sonini yangilash
+        function updatePassengerCount(type, change) {
+            if (type === 'adults' && passengers.adults + change >= 1) {
+                passengers.adults += change;
+            } else if (type === 'children' && passengers.children + change >= 0) {
+                passengers.children += change;
+            } else if (type === 'infants' && passengers.infants + change >= 0) {
+                passengers.infants += change;
+            }
+
+            document.getElementById('adults-count').textContent = passengers.adults;
+            document.getElementById('children-count').textContent = passengers.children;
+            document.getElementById('infants-count').textContent = passengers.infants;
+
+            updatePassengerDisplay();
+        }
+
+        // Yo‘lovchilar ma'lumotlarini ko‘rsatish
+        function updatePassengerDisplay() {
+            const totalPassengers = passengers.adults + passengers.children + passengers.infants;
+            const classType = document.querySelector('input[name="classType"]:checked').value === 'economy' ? 'Ekonom' : 'Biznes';
+            passengers.classType = classType.toLowerCase();
+            document.getElementById('passenger-display').textContent = `${totalPassengers} Yo‘lovchi, ${classType}`;
+        }
+
+        // Form submit funksiyasi
+        function handleSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {
+                routes: [],
+                passengers: {
+                    adults: passengers.adults,
+                    children: passengers.children,
+                    infants: passengers.infants,
+                    classType: passengers.classType
+                }
+            };
+
+            // Har bir marshrutni yig'ish
+            const routes = document.querySelectorAll('.route');
+            routes.forEach((route, index) => {
+                data.routes.push({
+                    from: formData.get(`routes[${index}][from]`),
+                    to: formData.get(`routes[${index}][to]`),
+                    departureDate: formData.get(`routes[${index}][departureDate]`)
+                });
+            });
+
+            console.log('Form ma\'lumotlari:', data);
+            alert('Ma\'lumotlar yuborildi:\n' + JSON.stringify(data, null, 2));
+        }
+
+        // Dropdownni tashqariga chiqishda yopish
+        document.addEventListener('click', (e) => {
+            const passengerInput = document.getElementById('passenger-input');
+            if (passengerInput && !passengerInput.contains(e.target) && !passengerDropdown.contains(e.target)) {
+                passengerDropdown.classList.add('hidden');
+            }
+        });
+
+        // Dastlabki marshrutni qo'shish
+        flightRoutes.appendChild(createRoute(0));
+    </script>
+</body>
+</html>

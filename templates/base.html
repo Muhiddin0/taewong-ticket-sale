@@ -1,0 +1,21 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% comment %} base {% endcomment %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    {% comment %} shadcn ui {% endcomment %}
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    {% comment %} lib/utils {% endcomment %}
+    <script src="{% static 'lib/cookie.js' %}"></script>
+
+    {% block head %} {% endblock %}
+  </head>
+  <body class="bg-gray-50 flex justify-center items-center min-h-screen p-4">
+    {% block content %}{% endblock content %}
+  </body>
+</html>
