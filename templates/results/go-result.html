@@ -7,50 +7,113 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-6">
-    <div class="max-w-4xl mx-auto">
-        <div class="bg-white p-4 rounded-xl shadow-md mb-4">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h2 class="text-xl font-bold">American Airlines</h2>
-                    <p class="text-gray-600">FAR ➝ SVO</p>
-                    <p class="text-sm text-gray-500">22.03.2025 - 24.03.2025</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-2xl font-bold text-blue-600">1,460.32 USD</p>
-                    <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg">Sotib olish</button>
-                </div>
-            </div>
-            <div class="mt-4">
-                <p class="text-gray-700 font-medium">Yo'nalish:</p>
-                <div class="border-l-4 border-blue-500 pl-4">
-                    <p>FAR - DFW (17:00 - 19:50)</p>
-                    <p>DFW - DOH (22:55 - 21:20)</p>
-                    <p>DOH - SVO (09:05 - 14:45)</p>
-                </div>
-            </div>
-        </div>
 
-        <div class="bg-white p-4 rounded-xl shadow-md mb-4">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h2 class="text-xl font-bold">American Airlines</h2>
-                    <p class="text-gray-600">FAR ➝ SVO</p>
-                    <p class="text-sm text-gray-500">22.03.2025 - 24.03.2025</p>
+    <div class="max-w-4xl mx-auto">
+        {% for offer in offers %}
+            <div class="bg-white p-4 rounded-xl shadow-md mb-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold">
+                            {% if offer.validatingAirlineCodes %}
+                                {{ offer.validatingAirlineCodes.0 }}
+                            {% else %}
+                                Noma'lum Aviakompaniya
+                            {% endif %}
+                        </h2>
+                        <p class="text-gray-600">
+                            {{ offer.itineraries.0.segments.0.departure.iataCode }} ➝ 
+                            {% with offer.itineraries.0.segments|last as last_segment %}
+                                {{ last_segment.departure.iataCode }}
+                            {% endwith %}
+                        </p>
+                        <p class="text-sm text-gray-500">
+                            {{ offer.itineraries.0.segments.0.departure.at|date:"d.m.Y" }} - 
+                            {% comment %} {{ offer.itineraries.0.segments|last.arrival.at|date:"d.m.Y" }} {% endcomment %}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-blue-600">
+                            {{ offer.price.total }} {{ offer.price.currency }}
+                        </p>
+                        <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg">Sotib olish</button>
+                    </div>
                 </div>
-                <div class="text-right">
-                    <p class="text-2xl font-bold text-blue-600">1,992.89 USD</p>
-                    <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg">Sotib olish</button>
+                <div class="mt-4">
+                    <p class="text-gray-700 font-medium">Yo'nalish:</p>
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        {% for segment in offer.itineraries.0.segments %}
+                            <p>
+                                {{ segment.departure.iataCode }} - {{ segment.arrival.iataCode }} 
+                                ({{ segment.departure.at|time:"H:i" }} - {{ segment.arrival.at|time:"H:i" }})
+                            </p>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
-            <div class="mt-4">
-                <p class="text-gray-700 font-medium">Yo'nalish:</p>
-                <div class="border-l-4 border-blue-500 pl-4">
-                    <p>FAR - ORD (15:57 - ???)</p>
-                    <p>ORD - DOH (??:?? - ????)</p>
-                    <p>DOH - SVO (??:?? - 14:45)</p>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
     </div>
+
 </body>
 </html>
+
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chipta Qidirish</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+
+    {% for offer in offers %}
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white p-4 rounded-xl shadow-md mb-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold">American Airlines</h2>
+                        <p class="text-gray-600">FAR ➝ SVO</p>
+                        <p class="text-sm text-gray-500">22.03.2025 - 24.03.2025</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-blue-600">1,460.32 USD</p>
+                        <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg">Sotib olish</button>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-gray-700 font-medium">Yo'nalish:</p>
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <p>FAR - DFW (17:00 - 19:50)</p>
+                        <p>DFW - DOH (22:55 - 21:20)</p>
+                        <p>DOH - SVO (09:05 - 14:45)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-md mb-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold">American Airlines</h2>
+                        <p class="text-gray-600">FAR ➝ SVO</p>
+                        <p class="text-sm text-gray-500">22.03.2025 - 24.03.2025</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-blue-600">1,992.89 USD</p>
+                        <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg">Sotib olish</button>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-gray-700 font-medium">Yo'nalish:</p>
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <p>FAR - ORD (15:57 - ???)</p>
+                        <p>ORD - DOH (??:?? - ????)</p>
+                        <p>DOH - SVO (??:?? - 14:45)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</body>
+</html> {% endcomment %}

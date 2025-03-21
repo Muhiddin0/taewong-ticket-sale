@@ -94,36 +94,7 @@
         onsubmit="handleSubmit(event)"
       >
         <!-- Trip Type Selection -->
-        <div class="flex space-x-6 mb-6">
-          <label class="flex items-center space-x-2 cursor-pointer">
-            <input
-              type="radio"
-              name="tripType"
-              value="one-way"
-              class="text-blue-500 focus:ring-blue-500 h-5 w-5"
-              checked
-            />
-            <span class="text-gray-700 font-medium">Borish</span>
-          </label>
-          <label class="flex items-center space-x-2 cursor-pointer">
-            <input
-              type="radio"
-              name="tripType"
-              value="round-trip"
-              class="text-blue-500 focus:ring-blue-500 h-5 w-5"
-            />
-            <span class="text-gray-700 font-medium">Borish va qaytish</span>
-          </label>
-          <label class="flex items-center space-x-2 cursor-pointer">
-            <input
-              type="radio"
-              name="tripType"
-              value="multi-city"
-              class="text-blue-500 focus:ring-blue-500 h-5 w-5"
-            />
-            <span class="text-gray-700 font-medium">Qiyin marshrut</span>
-          </label>
-        </div>
+         {% include 'navigation.html' %}
 
         <!-- Flight Search Fields -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

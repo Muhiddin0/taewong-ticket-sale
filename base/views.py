@@ -14,7 +14,10 @@ amadeus = Client(
 
 
 def test(request):
-    return render(request, 'results/go-result.html')
+
+    return render(request, 'results/go-result.html', {
+        'offers':offers
+    })
 
 
 def IATA(request):
@@ -45,72 +48,36 @@ def go_form(request):
             context={}
         )
     if request.method == 'POST':
-        # data = json.loads(request.body)
+        data = request.POST
+        print("🚀 ~ file: views.py:52 ~ data:", data)
         
-        # for offer in offers:
-        #     table = PrettyTable()
-        #     table.field_names = ["Flight No", "From", "To", "Departure", "Arrival", "Duration", "Aircraft", "Stops"]
-
-        #     for itinerary in offer["itineraries"]:
-        #         for segment in itinerary["segments"]:
-        #             table.add_row([
-        #                 f"{segment['carrierCode']}{segment['number']}",
-        #                 segment["departure"]["iataCode"],
-        #                 segment["arrival"]["iataCode"],
-        #                 segment["departure"]["at"],
-        #                 segment["arrival"]["at"],
-        #                 segment["duration"],
-        #                 segment["aircraft"]["code"],
-        #                 segment["numberOfStops"]
-        #             ])
-
-        #     # Pricing details
-        #     table_price = PrettyTable()
-        #     table_price.field_names = ["Currency", "Base Price", "Total Price"]
-        #     table_price.add_row([offer["price"]["currency"], offer["price"]["base"], offer["price"]["total"]])
-
-        #     print("Flight Information")
-        #     print(table)
-        #     print("\nPricing Information")
-        #     print(table_price)
-
-        # Mock data (keyin database bilan almashtirish mumkin)
-        mock_flights = [
-            {
-                "id": 1,
-                "departure": "TAS",
-                "arrival": "LHR",
-                "departure_time": "2023-10-15 08:00",
-                "arrival_time": "2023-10-15 14:00",
-                "duration": "6h",
-                "airline": "Uzbekistan Airways",
-                "flight_number": "UZ123",
-                "price": 450,
-                "baggage": "20kg",
-                "hand_luggage": "7kg",
-            },
-            {
-                "id": 2,
-                "departure": "TAS",
-                "arrival": "JFK",
-                "departure_time": "2023-10-15 10:00",
-                "arrival_time": "2023-10-15 22:00",
-                "duration": "12h",
-                "airline": "Turkish Airlines",
-                "flight_number": "TK456",
-                "price": 750,
-                "baggage": "30kg",
-                "hand_luggage": "8kg",
-            },
-        ]
+        response = amadeus.shopping.flight_offers_search.get(
+            originLocationCode="TAS",
+            destinationLocationCode="IST",
+            departureDate="2025-04-10",
+            adults=1,
+            children=1,
+            infants=1,
+            currencyCode="USD",
+        )
         
+        # response = amadeus.shopping.flight_offers_search.get(
+        #     originLocationCode=data.get('from'),
+        #     destinationLocationCode=data.get('to'),
+        #     departureDate=data.get('date'),
+        #     adults=data.get('adults'),
+        #     children=data.get('children'),
+        #     infants=data.get('infants'),
+        #     currencyCode="USD",
+        # )
         
+        print("🚀 ~ file: views.py:55 ~ response:", response)
+
         return render(
             request=request,
             template_name='results/go-result.html',
             context={
-                'offers':offers,
-                'flights':mock_flights
+                'offers': offers,
             }
         )
 
